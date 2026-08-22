@@ -13,11 +13,11 @@ Edit these placeholders:
   is public.
 - `02-configmap.yaml`: `MINIO_ENDPOINT` → your real MinIO host:port.
 - `05-gateway-httproute.yaml` already points at the shared `lims-gateway`
-  Gateway (from the `thanes-lims` frontend repo's `k8s/gateway.yaml`),
-  `sectionName: https`, hostname `lims.siamatic.work`, path prefix
-  `/api/v1`. No `Gateway`/`Certificate` object is defined here — the API
-  shares the frontend's existing TLS listener and cert (`lims-tls`) on
-  the same hostname, split by path.
+  Gateway (defined in `../platform/gateway.yaml`), `sectionName: https`,
+  hostname `lims.siamatic.work`, path prefix `/api/v1`. No
+  `Gateway`/`Certificate` object is defined here — the API shares the
+  frontend's existing TLS listener and cert (`lims-tls`, in
+  `../platform/certificate.yaml`) on the same hostname, split by path.
 - `01-secret.yaml` is a template only — don't edit and commit it. Create
   the real secret directly (see the command in that file's header
   comment) or manage it with your secrets tooling.
@@ -36,7 +36,7 @@ kubectl apply -f 05-gateway-httproute.yaml
 Or, once placeholders are filled in and the real secret exists:
 
 ```sh
-kubectl apply -f k8s/
+kubectl apply -f backend/
 ```
 
 ## Verify
@@ -47,6 +47,6 @@ kubectl get httproute,gateway -n thanes-lims
 curl https://<domain>/api/v1/health
 ```
 
-`kubectl apply --dry-run=client -f k8s/` checks manifest syntax without
-a live cluster. If `kubeconform`/`kubeval` is installed, use it for
-schema validation too.
+`kubectl apply --dry-run=client -f backend/` checks manifest syntax
+without a live cluster. If `kubeconform`/`kubeval` is installed, use it
+for schema validation too.
