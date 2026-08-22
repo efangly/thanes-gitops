@@ -64,10 +64,21 @@ kubectl apply -f platform/argocd/referencegrant.yaml
 kubectl apply -f platform/argocd/httproute.yaml
 kubectl apply -f platform/argocd/httproute-redirect.yaml
 
-# 3. Frontend
+# 3. AppProject + Applications (ให้ ArgoCD ดูแล frontend/backend ต่อ)
+kubectl apply -f platform/argocd/appproject-lims.yaml
+kubectl apply -f platform/argocd/application-frontend.yaml
+kubectl apply -f platform/argocd/application-backend.yaml
+# ArgoCD จะ sync frontend/ และ backend/ ให้เองจากจุดนี้ (automated, prune, selfHeal ปิด)
+# ต้องสร้าง Secret จริงก่อน sync backend สำเร็จ (ดู header ของ backend/01-secret.yaml)
+```
+
+หรือถ้าไม่ใช้ ArgoCD (apply ตรง ๆ):
+
+```sh
+# Frontend
 kubectl apply -f frontend/
 
-# 4. Backend — ดู placeholder ที่ต้องแก้ก่อนใน backend/README.md
+# Backend — ดู placeholder ที่ต้องแก้ก่อนใน backend/README.md
 kubectl apply -f backend/00-namespace.yaml
 # สร้าง Secret จริง (ดู header ของ backend/01-secret.yaml)
 kubectl apply -f backend/02-configmap.yaml

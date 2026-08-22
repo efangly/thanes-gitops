@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: lims-backend
+  namespace: argocd
+spec:
+  project: lims
+  source:
+    repoURL: https://github.com/efangly/thanes-gitops.git
+    targetRevision: main
+    path: backend/
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: thanes-lims
+  syncPolicy:
+    automated:
+      enabled: true
+      prune: true
+      selfHeal: false
