@@ -8,9 +8,11 @@ running outside the cluster — nothing here deploys a database.
 
 Edit these placeholders:
 
-- `03-deployment.yaml`: `image: docker.io/CHANGEME/thanes-lims-backend:latest`
-  → your real Docker Hub repo/tag. Remove `imagePullSecrets` if the repo
-  is public.
+- `03-deployment.yaml`: `image: docker.io/siamatic/lims-backend:latest` is
+  bumped to a specific version tag automatically by the backend repo's
+  `.github/workflows/release.yml` on every semver tag push (e.g. `0.0.1`)
+  — don't edit the tag by hand. Remove `imagePullSecrets` if the repo is
+  public.
 - `02-configmap.yaml`: `MINIO_ENDPOINT` → your real MinIO host:port.
 - `05-gateway-httproute.yaml` already points at the shared `lims-gateway`
   Gateway (defined in `../platform/gateway.yaml`), `sectionName: https`,

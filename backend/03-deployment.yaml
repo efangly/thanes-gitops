@@ -25,8 +25,9 @@ spec:
         - name: dockerhub-creds
       containers:
         - name: api
-          # CHANGEME: replace with your real Docker Hub image and tag.
-          image: docker.io/CHANGEME/thanes-lims-backend:latest
+          # Bumped automatically by the backend repo's release.yml CI job
+          # on every semver tag push. Don't edit the tag by hand.
+          image: docker.io/siamatic/lims-backend:latest
           ports:
             - containerPort: 8080
               name: http
