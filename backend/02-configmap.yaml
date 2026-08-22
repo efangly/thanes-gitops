@@ -17,7 +17,7 @@ data:
   # (host:port reachable from the OKE cluster, e.g. a private OCI VM).
   MINIO_ENDPOINT: "siamatic.thddns.net:9000"
   MINIO_BUCKET: "thanes-lims"
-  MINIO_USE_SSL: "true"
+  MINIO_USE_SSL: "false"
 
   LOG_LEVEL: "info"
 
