@@ -1,0 +1,19 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: thanes-lims
+  namespace: thanes-lims
+spec:
+  parentRefs:
+    - name: lims-gateway
+      sectionName: https
+  hostnames:
+    - lims.siamatic.work
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: thanes-lims
+          port: 80

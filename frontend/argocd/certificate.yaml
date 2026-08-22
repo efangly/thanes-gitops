@@ -1,0 +1,14 @@
+# Reuses the letsencrypt-prod ClusterIssuer already created for the app
+# (k8s/cluster-issuer.yaml) — no new issuer needed.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: argocd-tls
+  namespace: argocd
+spec:
+  secretName: argocd-tls
+  dnsNames:
+    - argocd.siamatic.work
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer

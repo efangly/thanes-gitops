@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: thanes-lims
+  namespace: thanes-lims
+  labels:
+    app: thanes-lims
+spec:
+  type: ClusterIP
+  selector:
+    app: thanes-lims
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3000

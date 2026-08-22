@@ -1,0 +1,16 @@
+# Allows lims-gateway (namespace thanes-lims) to reference the argocd-tls
+# Secret living in this namespace for its https-argocd listener's TLS cert.
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: allow-lims-gateway-tls
+  namespace: argocd
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      namespace: thanes-lims
+  to:
+    - group: ""
+      kind: Secret
+      name: argocd-tls

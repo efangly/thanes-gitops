@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: thanes-lims
+  namespace: thanes-lims
+  labels:
+    app: thanes-lims
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: thanes-lims
+  template:
+    metadata:
+      labels:
+        app: thanes-lims
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+      containers:
+        - name: thanes-lims
+          image: docker.io/siamatic/lims-frontend:0.0.12
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 3000
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 20

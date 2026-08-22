@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: thanes-lims-config
+  namespace: thanes-lims
+data:
+  APP_ENV: "production"
+  APP_PORT: "8080"
+  # DB already has data on an existing OCI VM; migrations are managed
+  # out-of-band, not on pod start.
+  AUTO_MIGRATE: "false"
+
+  JWT_ACCESS_TTL: "15m"
+  JWT_REFRESH_TTL: "168h"
+
+  # CHANGEME before apply: point at the existing external MinIO instance
+  # (host:port reachable from the OKE cluster, e.g. a private OCI VM).
+  MINIO_ENDPOINT: "CHANGEME:9000"
+  MINIO_BUCKET: "thanes-lims"
+  MINIO_USE_SSL: "true"
+
+  LOG_LEVEL: "info"
+
+  AUTO_REORDER_ENABLED: "true"
+  AUTO_REORDER_INTERVAL: "1h"

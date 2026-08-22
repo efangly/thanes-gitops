@@ -1,0 +1,13 @@
+# issuerRef.name must match the ClusterIssuer created by k8s/cluster-issuer.yaml.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: lims-tls
+  namespace: thanes-lims
+spec:
+  secretName: lims-tls
+  dnsNames:
+    - lims.siamatic.work
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer

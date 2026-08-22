@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: thanes-lims-api
+  namespace: thanes-lims
+  labels:
+    app: thanes-lims-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: thanes-lims-api
+  template:
+    metadata:
+      labels:
+        app: thanes-lims-api
+    spec:
+      # Only needed if the Docker Hub repo is private. Create with:
+      #   kubectl create secret docker-registry dockerhub-creds \
+      #     --namespace thanes-lims \
+      #     --docker-server=https://index.docker.io/v1/ \
+      #     --docker-username=<user> --docker-password=<token>
+      # Remove this section if the image is public.
+      imagePullSecrets:
+        - name: dockerhub-creds
+      containers:
+        - name: api
+          # CHANGEME: replace with your real Docker Hub image and tag.
+          image: docker.io/CHANGEME/thanes-lims-backend:latest
+          ports:
+            - containerPort: 8080
+              name: http
+          envFrom:
+            - configMapRef:
+                name: thanes-lims-config
+            - secretRef:
+                name: thanes-lims-secrets
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false

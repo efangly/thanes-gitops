@@ -1,0 +1,15 @@
+# Apply AFTER the official ArgoCD install manifest exists in the cluster:
+#   kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+#   kubectl apply -f k8s/argocd/cmd-params-patch.yaml
+#   kubectl rollout restart deployment argocd-server -n argocd
+#
+# `kubectl apply` strategic-merges ConfigMap.data by key, so this only adds
+# server.insecure without touching the other keys the installer set. Needed
+# because TLS terminates at the shared Gateway, not at argocd-server itself.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cmd-params-cm
+  namespace: argocd
+data:
+  server.insecure: "true"

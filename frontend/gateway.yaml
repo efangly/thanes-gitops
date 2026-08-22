@@ -1,0 +1,45 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: lims-gateway
+  namespace: thanes-lims
+spec:
+  gatewayClassName: envoy
+  infrastructure:
+    annotations:
+      service.beta.kubernetes.io/oci-load-balancer-subnet1: ocid1.subnet.oc43.ap-samutprakan-1.aaaaaaaa4osmjm5cb3j2wj2fs5pqhjgz7wkpdhkwvxmlvghmxooicnjg4mfa
+      service.beta.kubernetes.io/oci-load-balancer-shape: flexible
+      service.beta.kubernetes.io/oci-load-balancer-shape-flex-min: "100"
+      service.beta.kubernetes.io/oci-load-balancer-shape-flex-max: "100"
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
+    - name: https
+      protocol: HTTPS
+      port: 443
+      hostname: lims.siamatic.work
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: lims-tls
+      allowedRoutes:
+        namespaces:
+          from: All
+    - name: https-argocd
+      protocol: HTTPS
+      port: 443
+      hostname: argocd.siamatic.work
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: argocd-tls
+            namespace: argocd
+      allowedRoutes:
+        namespaces:
+          from: All
