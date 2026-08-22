@@ -1,0 +1,10 @@
+.env
+/bin/
+*.log
+.DS_Store
+/tmp/
+*.test
+coverage.out
+.idea/
+dist/
+.claude/
