@@ -23,6 +23,14 @@ spec:
       # Remove this section if the image is public.
       imagePullSecrets:
         - name: dockerhub-creds
+      # Matches the fixed UID/GID the Dockerfile's USER directive runs
+      # as, so kubelet can verify runAsNonRoot without inspecting the
+      # image (avoids "cannot verify user is non-root" for images whose
+      # USER is a name rather than a numeric UID).
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
       containers:
         - name: api
           # Bumped automatically by the backend repo's release.yml CI job
@@ -56,5 +64,4 @@ spec:
               cpu: 500m
               memory: 256Mi
           securityContext:
-            runAsNonRoot: true
             allowPrivilegeEscalation: false
