@@ -15,18 +15,6 @@ spec:
       labels:
         app: thanes-lims-api
     spec:
-      # Only needed if the Docker Hub repo is private. Create with:
-      #   kubectl create secret docker-registry dockerhub-creds \
-      #     --namespace thanes-lims \
-      #     --docker-server=https://index.docker.io/v1/ \
-      #     --docker-username=<user> --docker-password=<token>
-      # Remove this section if the image is public.
-      imagePullSecrets:
-        - name: dockerhub-creds
-      # Matches the fixed UID/GID the Dockerfile's USER directive runs
-      # as, so kubelet can verify runAsNonRoot without inspecting the
-      # image (avoids "cannot verify user is non-root" for images whose
-      # USER is a name rather than a numeric UID).
       securityContext:
         runAsNonRoot: true
         runAsUser: 10001
