@@ -19,6 +19,10 @@ spec:
         runAsNonRoot: true
         runAsUser: 10001
         runAsGroup: 10001
+      volumes:
+        - name: adb-wallet
+          secret:
+            secretName: adb-wallet
       containers:
         - name: api
           # Bumped automatically by the backend repo's release.yml CI job
@@ -32,6 +36,10 @@ spec:
                 name: thanes-lims-config
             - secretRef:
                 name: thanes-lims-secrets
+          volumeMounts:
+            - name: adb-wallet
+              mountPath: /app/wallet
+              readOnly: true
           livenessProbe:
             httpGet:
               path: /api/v1/health

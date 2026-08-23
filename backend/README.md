@@ -23,12 +23,20 @@ Edit these placeholders:
 - `01-secret.yaml` is a template only — don't edit and commit it. Create
   the real secret directly (see the command in that file's header
   comment) or manage it with your secrets tooling.
+- `01-secret-adb-wallet.yaml` is also a template only (no data). The
+  `adb-wallet` Secret backs the Oracle ADB wallet volume mounted at
+  `/app/wallet` in the API container (used by the chatbot feature).
+  Create it from a **container-ready copy** of the unzipped ADB wallet
+  directory — not your local dev wallet — see that file's header comment
+  for why (`sqlnet.ora`'s `WALLET_LOCATION` must point at `/app/wallet`,
+  not your dev machine's path).
 
 ## Apply order
 
 ```sh
 kubectl apply -f 00-namespace.yaml
-# create the real Secret here (see 01-secret.yaml header), then:
+# create the real Secrets here (see 01-secret.yaml and
+# 01-secret-adb-wallet.yaml headers), then:
 kubectl apply -f 02-configmap.yaml
 kubectl apply -f 03-deployment.yaml
 kubectl apply -f 04-service.yaml
