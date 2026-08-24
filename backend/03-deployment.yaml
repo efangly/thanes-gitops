@@ -27,7 +27,7 @@ spec:
         - name: api
           # Bumped automatically by the backend repo's release.yml CI job
           # on every semver tag push. Don't edit the tag by hand.
-          image: docker.io/siamatic/lims-backend:0.0.4
+          image: docker.io/siamatic/lims-backend:0.0.5
           ports:
             - containerPort: 8080
               name: http
