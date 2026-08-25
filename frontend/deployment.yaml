@@ -21,7 +21,7 @@ spec:
         runAsGroup: 1001
       containers:
         - name: thanes-lims
-          image: docker.io/siamatic/lims-frontend:0.0.4
+          image: docker.io/siamatic/lims-frontend:0.0.5
           imagePullPolicy: Always
           ports:
             - name: http
