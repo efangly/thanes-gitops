@@ -13,6 +13,17 @@ data:
   JWT_ACCESS_TTL: "15m"
   JWT_REFRESH_TTL: "168h"
 
+  # Refresh Cookie (see backend docs/adr/0004-refresh-token-in-httponly-cookie.md).
+  # true because the Gateway's https listener (lims-tls) terminates TLS in
+  # front of this Service - the API itself always sees plain http, but the
+  # browser only ever talks to it over https.
+  COOKIE_SECURE: "true"
+  # CORS_ALLOW_ORIGINS is deliberately NOT set here: frontend and API share
+  # the same hostname (lims.siamatic.work), split only by path prefix (see
+  # 05-gateway-httproute.yaml) - same-origin requests never hit CORS at all.
+  # Only add this var if a deployment ever splits them onto different
+  # origins/subdomains.
+
   # CHANGEME before apply: point at the existing external MinIO instance
   # (host:port reachable from the OKE cluster, e.g. a private OCI VM).
   MINIO_ENDPOINT: "siamatic.thddns.net:9000"
