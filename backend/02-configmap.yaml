@@ -18,6 +18,7 @@ data:
   # front of this Service - the API itself always sees plain http, but the
   # browser only ever talks to it over https.
   COOKIE_SECURE: "true"
+  CORS_ALLOW_ORIGINS: "https://lims.siamatic.work"
   # CORS_ALLOW_ORIGINS is deliberately NOT set here: frontend and API share
   # the same hostname (lims.siamatic.work), split only by path prefix (see
   # 05-gateway-httproute.yaml) - same-origin requests never hit CORS at all.
