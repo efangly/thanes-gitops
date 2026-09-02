@@ -35,3 +35,15 @@ data:
 
   AUTO_REORDER_ENABLED: "true"
   AUTO_REORDER_INTERVAL: "1h"
+
+  # AI chatbot POC (see backend docs/chatbot-poc-plan.md). NL->SQL + narration
+  # run against the Claude API from Go; the generated SQL runs read-only
+  # against a separate Oracle ADB. ORACLE_ENABLED gates the whole feature -
+  # when true the pod still boots if the ADB is unreachable (graceful
+  # degrade, /chat returns 404). TNS_ADMIN points at the adb-wallet Secret
+  # volume mounted at /app/wallet (see 03-deployment.yaml).
+  # Secrets ANTHROPIC_API_KEY and ORACLE_DSN live in the thanes-lims-secrets
+  # Secret (hand-managed, not in this repo).
+  ORACLE_ENABLED: "true"
+  ORACLE_TNS_ADMIN: "/app/wallet"
+  CHATBOT_MODEL: "claude-haiku-4-5-20251001"
