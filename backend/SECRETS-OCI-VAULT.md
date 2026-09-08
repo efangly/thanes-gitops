@@ -98,10 +98,19 @@ helm repo add external-secrets https://charts.external-secrets.io
 helm repo update
 helm install external-secrets external-secrets/external-secrets \
   -n external-secrets --create-namespace \
-  --set installCRDs=true
+  --set installCRDs=true \
+  --set-json 'extraEnv=[{"name":"OCI_REGION_METADATA","value":"{\"realmKey\":\"oc43\",\"realmDomainComponent\":\"thaiaiscloud.com\",\"regionKey\":\"YIK\",\"regionIdentifier\":\"ap-samutprakan-1\"}"}]'
 
 kubectl -n external-secrets rollout status deploy/external-secrets
 ```
+
+`OCI_REGION_METADATA` is **required** on this realm: `ap-samutprakan-1` is OC43
+(`thaiaiscloud.com`), and the OCI Go SDK otherwise builds the Instance-Principal
+federation endpoint as `auth.ap-samutprakan-1.oraclecloud.com`, which does not
+resolve — the ClusterSecretStore then sits `Ready=False / InvalidProviderConfig`
+("failed to get security token ... no such host"). Same JSON as the worker
+nodes' `/etc/oci/regions-config.json`. If ESO is already installed, apply it with
+`helm upgrade ... --reuse-values --set-json 'extraEnv=[...]'` and roll the deploy.
 
 (Optional, matches the existing GitOps style: wrap this in an ArgoCD
 `Application` pointing at the helm chart instead of `helm install`.)
