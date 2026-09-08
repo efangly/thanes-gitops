@@ -13,3 +13,6 @@ spec:
   clusterResourceWhitelist:
     - group: ''
       kind: Namespace
+    # ESO ClusterSecretStore for thanes-lims-secrets (see backend/SECRETS-OCI-VAULT.md)
+    - group: external-secrets.io
+      kind: ClusterSecretStore
