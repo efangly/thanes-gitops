@@ -25,11 +25,17 @@ data:
   # Only add this var if a deployment ever splits them onto different
   # origins/subdomains.
 
-  # CHANGEME before apply: point at the existing external MinIO instance
-  # (host:port reachable from the OKE cluster, e.g. a private OCI VM).
-  MINIO_ENDPOINT: "siamatic.thddns.net:9000"
-  MINIO_BUCKET: "thanes-lims"
-  MINIO_USE_SSL: "false"
+  # Object storage (documents) - OCI Object Storage via its S3-compatible API
+  # (see backend docs/adr/0009-oci-object-storage-via-s3-compat.md).
+  # STORAGE_ENDPOINT = <namespace>.compat.objectstorage.<region>.oraclecloud.com
+  # STORAGE_REGION must be the OCI region id - it's part of the SigV4 signature.
+  # Credentials STORAGE_ACCESS_KEY / STORAGE_SECRET_KEY (an IAM user's Customer
+  # Secret Key) live in the thanes-lims-secrets Secret, not here.
+  # OC43 realm -> domain is oci.thaiaiscloud.com, not oraclecloud.com.
+  STORAGE_ENDPOINT: "ax45vpor5h7p.compat.objectstorage.ap-samutprakan-1.oci.thaiaiscloud.com"
+  STORAGE_REGION: "ap-samutprakan-1"
+  STORAGE_BUCKET: "lims-bucket"
+  STORAGE_USE_SSL: "true"
 
   LOG_LEVEL: "info"
 
@@ -43,7 +49,8 @@ data:
   # degrade, /chat returns 404). TNS_ADMIN points at the adb-wallet Secret
   # volume mounted at /app/wallet (see 03-deployment.yaml).
   # Secrets ANTHROPIC_API_KEY and ORACLE_DSN live in the thanes-lims-secrets
-  # Secret (hand-managed, not in this repo).
+  # Secret, synced from OCI Vault by the External Secrets Operator
+  # (see 06-external-secret.yaml + SECRETS-OCI-VAULT.md).
   ORACLE_ENABLED: "true"
   ORACLE_TNS_ADMIN: "/app/wallet"
   CHATBOT_MODEL: "claude-haiku-4-5-20251001"
