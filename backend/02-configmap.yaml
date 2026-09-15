@@ -54,3 +54,15 @@ data:
   ORACLE_ENABLED: "true"
   ORACLE_TNS_ADMIN: "/app/wallet"
   CHATBOT_MODEL: "claude-haiku-4-5-20251001"
+
+  # Partner Device (SMtrack third-party device data via gRPC - see backend
+  # docs/partner-api-guide.md, docs/adr/0012-partner-api-grpc-transport.md).
+  # PARTNER_GRPC_ADDR is a bare host:port gRPC dial target, not a URL - no
+  # http(s):// scheme. Plaintext (no TLS) for now, a known gap on SMtrack's
+  # side (see ADR 0012). PARTNER_API_KEY lives in thanes-lims-secrets, not
+  # here (see 06-external-secret.yaml + SECRETS-OCI-VAULT.md).
+  PARTNER_API_ENABLED: "true"
+  PARTNER_GRPC_ADDR: "siamatic.thddns.net:50051"
+  PARTNER_API_POLL_INTERVAL: "30s"
+  PARTNER_API_CACHE_TTL: "45s"
+  PARTNER_API_STALE_MAX: "5m"

@@ -24,7 +24,7 @@ Identifiers used below:
 
 ---
 
-## Step 1 — OCI Vault: master key + 8 secrets
+## Step 1 — OCI Vault: master key + 9 secrets
 
 Master encryption key — **already created** in `thanes-lims-backend-vault`:
 
@@ -60,6 +60,7 @@ mksecret thanes-lims-anthropic-api-key   '<ANTHROPIC_API_KEY>'
 mksecret thanes-lims-oracle-dsn          '<ORACLE_DSN>'
 mksecret thanes-lims-storage-access-key  '<Customer Secret Key: id>'
 mksecret thanes-lims-storage-secret-key  '<Customer Secret Key: secret>'
+mksecret thanes-lims-partner-api-key     '<PARTNER_API_KEY>'
 ```
 
 Secret names must match `remoteRef.key` in `06-external-secret.yaml` exactly.
@@ -133,7 +134,7 @@ kubectl apply -f 06-external-secret.yaml
 kubectl get externalsecret thanes-lims-secrets -n thanes-lims -w
 #   STATUS should become  SecretSynced / Ready=True
 kubectl get secret thanes-lims-secrets -n thanes-lims -o go-template='{{range $k,$_ := .data}}{{$k}}{{"\n"}}{{end}}'
-#   -> 8 keys incl. STORAGE_ACCESS_KEY / STORAGE_SECRET_KEY
+#   -> 9 keys incl. STORAGE_ACCESS_KEY / STORAGE_SECRET_KEY / PARTNER_API_KEY
 
 # Roll the API so it picks up the (possibly changed) values
 kubectl rollout restart deploy/thanes-lims-api -n thanes-lims
