@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lims-chatbot-service-config
+  namespace: thanes-lims
+data:
+  PORT: "3000"
+
+  # In-cluster DNS name for ../mcp-server/'s Service - internal-only, no
+  # public ingress (see ../mcp-server/README.md). Streamable HTTP is mounted
+  # at the process root, no path prefix.
+  MCP_SERVER_URL: "http://lims-mcp-server.thanes-lims.svc.cluster.local:8090"
+
+  # Same model id the old Go chatbot POC used by default
+  # (backend docs/chatbot-poc-plan.md) - change independently of the Go
+  # side now, they're decoupled.
+  CHATBOT_MODEL: "claude-haiku-4-5-20251001"

@@ -22,7 +22,7 @@ Edit these placeholders:
   `Gateway`/`Certificate` object is defined here — the API shares the
   frontend's existing TLS listener and cert (`lims-tls`, in
   `../platform/certificate.yaml`) on the same hostname, split by path.
-- `thanes-lims-secrets` is **no longer hand-managed**. Its 9 values live in
+- `thanes-lims-secrets` is **no longer hand-managed**. Its values live in
   OCI Vault and the External Secrets Operator projects them into the
   cluster — see `SECRETS-OCI-VAULT.md` for the one-time setup (Vault
   secrets, IAM policy, ESO install) and `06-external-secret.yaml` for the
@@ -30,9 +30,16 @@ Edit these placeholders:
   `DATABASE_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `REDIS_URL`,
   `ANTHROPIC_API_KEY`, `ORACLE_DSN`, `STORAGE_ACCESS_KEY` /
   `STORAGE_SECRET_KEY` (OCI IAM Customer Secret Key — was
-  `MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY`), and `PARTNER_API_KEY` (SMtrack
+  `MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY`), `PARTNER_API_KEY` (SMtrack
   Partner API gRPC key — see backend
-  `docs/adr/0012-partner-api-grpc-transport.md`).
+  `docs/adr/0012-partner-api-grpc-transport.md`), and
+  `MCP_SERVICE_API_KEY` (shared with `../mcp-server/` and
+  `../chatbot-service/` — see those folders' READMEs).
+- This Secret and ConfigMap are also consumed by `../mcp-server/`'s
+  Deployment (`envFrom`, same resource names) — it shares this repo's Go
+  `Config` struct (`internal/config/config.go`) and therefore needs every
+  var here, not just the MCP-specific ones. Apply/sync this folder's
+  `02-configmap.yaml`/`06-external-secret.yaml` before `../mcp-server/`.
 - `01-secret-adb-wallet.yaml` is also a template only (no data). The
   `adb-wallet` Secret backs the Oracle ADB wallet volume mounted at
   `/app/wallet` in the API container (used by the chatbot feature).

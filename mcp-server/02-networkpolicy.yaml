@@ -1,0 +1,34 @@
+# Restricts inbound traffic to lims-mcp-server to only lims-chatbot-service
+# pods in this namespace, on the mcp port - defense in depth on top of the
+# X-Service-Api-Key + JWT checks the server already does itself (see
+# backend docs/adr/0013-mcp-server-transport.md), and the deliberate
+# absence of any HTTPRoute for this Service. Without this policy, any other
+# pod in thanes-lims (e.g. thanes-lims-api itself, or the frontend) could
+# also reach it - not currently a problem, but this makes "only the chatbot
+# service talks to this" an enforced fact instead of an accident of what
+# nothing else happens to try.
+#
+# Requires a CNI that enforces NetworkPolicy (OKE's default Flannel CNI does
+# NOT - see https://docs.oracle.com/iaas/Content/ContEng/Tasks/contengnetworkpolicyconfig.htm.
+# If NetworkPolicy enforcement (e.g. Calico) is not installed on this
+# cluster, this resource is inert - kubectl apply succeeds but has no
+# effect. Confirm enforcement is active before relying on this alone.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: lims-mcp-server-allow-chatbot-service
+  namespace: thanes-lims
+spec:
+  podSelector:
+    matchLabels:
+      app: lims-mcp-server
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: lims-chatbot-service
+      ports:
+        - protocol: TCP
+          port: 8090

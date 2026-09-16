@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lims-chatbot-service
+  namespace: thanes-lims
+  labels:
+    app: lims-chatbot-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: lims-chatbot-service
+  template:
+    metadata:
+      labels:
+        app: lims-chatbot-service
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+      containers:
+        - name: chatbot-service
+          # Bumped automatically by the lims-chatbot-service repo's own
+          # release.yml CI job on every semver tag push (mirrors
+          # ../backend/03-deployment.yaml's pattern) - don't edit by hand.
+          image: docker.io/siamatic/lims-chatbot-service:0.0.1
+          ports:
+            - containerPort: 3000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: lims-chatbot-service-config
+            - secretRef:
+                name: lims-chatbot-service-secrets
+          # No dedicated /health route exists yet (see repo README) - GET /
+          # is the default NestJS "Hello World" AppController route and is
+          # NOT behind JwtAuthGuard (only POST /chat is), so it's a safe,
+          # honest liveness/readiness target for now. Swap to a real
+          # /health endpoint if one gets added later.
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false

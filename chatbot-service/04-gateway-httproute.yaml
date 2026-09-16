@@ -1,0 +1,40 @@
+# Shares the frontend/backend's Gateway, hostname, and TLS listener/cert
+# (../platform/gateway.yaml, lims-tls) - same-origin as the rest of the app,
+# split by path prefix (frontend `/`, API `/api/v1`, this service `/ai`),
+# same reasoning as ../backend/05-gateway-httproute.yaml's CORS comment: no
+# CORS config needed because it's all one origin.
+#
+# The internal service route is POST /chat (see the lims-chatbot-service
+# repo's src/chatbot/chatbot.controller.ts) - not /ai/chat. The URLRewrite
+# filter below strips the /ai prefix before forwarding, so external
+# `POST https://lims.siamatic.work/ai/chat` reaches the pod as `POST /chat`.
+# This external path (/ai, and specifically /ai/chat) was chosen per
+# /Users/tng-mac-01/.claude/plans/ai-chatbot-groovy-spindle.md's Phase 5.1 -
+# confirm with whoever owns the frontend before changing it, since
+# docs/chatbot-frontend-integration.md (backend repo) will need updating to
+# match once the frontend actually switches over.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: lims-chatbot-service
+  namespace: thanes-lims
+spec:
+  parentRefs:
+    - name: lims-gateway
+      sectionName: https
+  hostnames:
+    - lims.siamatic.work
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /ai
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: lims-chatbot-service
+          port: 80

@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lims-mcp-server
+  namespace: thanes-lims
+  labels:
+    app: lims-mcp-server
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: lims-mcp-server
+  template:
+    metadata:
+      labels:
+        app: lims-mcp-server
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+      containers:
+        - name: mcp-server
+          # Same image as thanes-lims-api (../backend/03-deployment.yaml) -
+          # cmd/mcp-server is built into the same binary set from the same
+          # Dockerfile/release. Only the entrypoint differs. Bumped
+          # automatically by the backend repo's release.yml CI job on every
+          # semver tag push, same as ../backend/03-deployment.yaml - don't
+          # edit the tag by hand, keep both files' tags in sync.
+          image: docker.io/siamatic/lims-backend:0.0.16
+          command: ["./mcp-server"]
+          ports:
+            - containerPort: 8090
+              name: mcp
+          # Reuses the backend's ConfigMap/Secret (../backend/02-configmap.yaml,
+          # ../backend/06-external-secret.yaml) rather than its own - this
+          # binary shares the same Go Config struct as cmd/api
+          # (internal/config/config.go), so every `required` field there
+          # (Storage/Redis/Partner vars included) must be present even though
+          # cmd/mcp-server never uses most of them. Apply/sync ../backend/
+          # first. MCP_SERVER_PORT and MCP_SERVICE_API_KEY (the two vars this
+          # binary actually reads beyond DATABASE_URL/JWT_*) live in those
+          # same two resources - see the comments added there.
+          envFrom:
+            - configMapRef:
+                name: thanes-lims-config
+            - secretRef:
+                name: thanes-lims-secrets
+          # No adb-wallet volume here - cmd/mcp-server reads Postgres
+          # directly (DATABASE_URL) and never touches Oracle.
+          #
+          # No unauthenticated health-check route exists on this binary -
+          # every HTTP request, including a bare GET /, requires
+          # X-Service-Api-Key + Authorization before any response is sent
+          # (see backend docs/mcp-server-tools.md "Connecting"), so an
+          # httpGet probe would see 401 and kubelet would restart-loop a
+          # perfectly healthy pod. Use a plain TCP check instead.
+          livenessProbe:
+            tcpSocket:
+              port: mcp
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: mcp
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false

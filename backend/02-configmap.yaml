@@ -55,6 +55,17 @@ data:
   ORACLE_TNS_ADMIN: "/app/wallet"
   CHATBOT_MODEL: "claude-haiku-4-5-20251001"
 
+  # MCP server (cmd/mcp-server, ../mcp-server/ Deployment) - separate process/
+  # image entrypoint from the API, exposing read-only LIMS tools over MCP
+  # Streamable HTTP for lims-chatbot-service (see backend
+  # docs/mcp-server-tools.md, docs/adr/0013-mcp-server-transport.md). Reads
+  # this same DATABASE_URL directly - no Oracle involved. The mcp-server
+  # Deployment reuses this ConfigMap (envFrom) rather than having its own,
+  # since it shares the same Go Config struct as the API and therefore needs
+  # every var here too (Storage/Redis/Partner vars included, even though it
+  # doesn't use them - internal/config/config.go marks them `required`).
+  MCP_SERVER_PORT: "8090"
+
   # Partner Device (SMtrack third-party device data via gRPC - see backend
   # docs/partner-api-guide.md, docs/adr/0012-partner-api-grpc-transport.md).
   # PARTNER_GRPC_ADDR is a bare host:port gRPC dial target, not a URL - no

@@ -12,10 +12,12 @@ Postgres และ MinIO เป็น external services ที่รันอย
 
 ```
 .
-├── backend/    # thanes-lims-backend API (namespace: thanes-lims)
-├── frontend/   # thanes-lims frontend (namespace: thanes-lims)
-└── platform/   # cluster-level resources ที่ทั้งระบบใช้ร่วมกัน
-    └── argocd/ # ArgoCD server (namespace: argocd)
+├── backend/           # thanes-lims-backend API (namespace: thanes-lims)
+├── frontend/          # thanes-lims frontend (namespace: thanes-lims)
+├── mcp-server/        # Go MCP server (cmd/mcp-server, internal-only, namespace: thanes-lims)
+├── chatbot-service/   # NestJS + LangGraph.js AI chatbot (namespace: thanes-lims)
+└── platform/          # cluster-level resources ที่ทั้งระบบใช้ร่วมกัน
+    └── argocd/        # ArgoCD server (namespace: argocd)
 ```
 
 ### `platform/`
@@ -45,6 +47,24 @@ Gateway HTTPRoute ของ API เสิร์ฟบน path prefix `/api/v1` �
 (ใช้ TLS cert ร่วมกับ frontend) ดูรายละเอียดการ deploy และ placeholder
 ที่ต้องแก้ก่อน apply ได้ใน [`backend/README.md`](backend/README.md)
 
+### `mcp-server/`
+
+Deployment + Service + NetworkPolicy ของ Go MCP server (`cmd/mcp-server`
+ใน repo `backend` เดียวกัน คนละ binary/entrypoint จาก API) เปิด tool
+อ่านข้อมูล LIMS แบบ read-only ให้ `chatbot-service/` เรียกผ่าน MCP
+Streamable HTTP — **internal-only ไม่มี HTTPRoute** ใช้ ConfigMap/Secret
+ร่วมกับ `backend/` (ดู [`mcp-server/README.md`](mcp-server/README.md))
+เป็นส่วนหนึ่งของแผนย้าย AI chatbot ออกจาก Go backend ไปเป็น service แยก
+(`/Users/tng-mac-01/.claude/plans/ai-chatbot-groovy-spindle.md`)
+
+### `chatbot-service/`
+
+ConfigMap, Secret, Deployment, Service และ Gateway HTTPRoute ของ AI
+chatbot microservice ใหม่ (NestJS + LangGraph.js, repo แยกต่างหาก
+`lims-chatbot-service`) เสิร์ฟบน path prefix `/ai` ของโดเมนเดียวกัน
+(rewrite `/ai/chat` → `/chat` ก่อนส่งเข้า pod) ดูรายละเอียดได้ใน
+[`chatbot-service/README.md`](chatbot-service/README.md)
+
 ## ลำดับการ Apply
 
 ```sh
@@ -64,12 +84,15 @@ kubectl apply -f platform/argocd/referencegrant.yaml
 kubectl apply -f platform/argocd/httproute.yaml
 kubectl apply -f platform/argocd/httproute-redirect.yaml
 
-# 3. AppProject + Applications (ให้ ArgoCD ดูแล frontend/backend ต่อ)
+# 3. AppProject + Applications (ให้ ArgoCD ดูแล frontend/backend/mcp-server/chatbot-service ต่อ)
 kubectl apply -f platform/argocd/appproject-lims.yaml
 kubectl apply -f platform/argocd/application-frontend.yaml
 kubectl apply -f platform/argocd/application-backend.yaml
-# ArgoCD จะ sync frontend/ และ backend/ ให้เองจากจุดนี้ (automated, prune, selfHeal ปิด)
-# ต้องสร้าง Secret จริงก่อน sync backend สำเร็จ (ดู header ของ backend/01-secret.yaml)
+kubectl apply -f platform/argocd/application-mcp-server.yaml       # ต้องมี backend/ พร้อม MCP_SERVICE_API_KEY ใน vault แล้ว
+kubectl apply -f platform/argocd/application-chatbot-service.yaml  # ต้องมี mcp-server/ พร้อมแล้ว
+# ArgoCD จะ sync ให้เองจากจุดนี้ (automated, prune, selfHeal ปิด)
+# ต้องสร้าง Secret จริงใน OCI Vault ก่อน sync backend/mcp-server/chatbot-service สำเร็จ
+# (ดู backend/SECRETS-OCI-VAULT.md, backend/06-external-secret.yaml, chatbot-service/01-external-secret.yaml)
 ```
 
 หรือถ้าไม่ใช้ ArgoCD (apply ตรง ๆ):
@@ -80,21 +103,29 @@ kubectl apply -f frontend/
 
 # Backend — ดู placeholder ที่ต้องแก้ก่อนใน backend/README.md
 kubectl apply -f backend/00-namespace.yaml
-# สร้าง Secret จริง (ดู header ของ backend/01-secret.yaml)
 kubectl apply -f backend/02-configmap.yaml
+kubectl apply -f backend/06-external-secret.yaml   # ต้องมี Secret จริงใน OCI Vault ก่อน
 kubectl apply -f backend/03-deployment.yaml
 kubectl apply -f backend/04-service.yaml
 kubectl apply -f backend/05-gateway-httproute.yaml
+
+# MCP server — ต้องมี backend/ พร้อมแล้ว (ใช้ ConfigMap/Secret ร่วมกัน)
+kubectl apply -f mcp-server/
+
+# Chatbot service — ต้องมี mcp-server/ พร้อมแล้ว
+kubectl apply -f chatbot-service/
 ```
 
 ## ก่อน Apply — สิ่งที่ต้องแก้
 
 - `platform/cluster-issuer.yaml`: `PLACEHOLDER_EMAIL` → อีเมลจริงสำหรับ Let's Encrypt
-- `backend/03-deployment.yaml`: image → Docker Hub repo/tag จริง
-- `backend/02-configmap.yaml`: `MINIO_ENDPOINT` → host:port ของ MinIO จริง
-- `backend/01-secret.yaml`: เป็น template เท่านั้น ห้าม commit ค่าจริง —
-  สร้าง Secret ตรง ๆ ด้วย `kubectl` หรือใช้เครื่องมือจัดการ secret
-  (sealed-secrets, external-secrets ฯลฯ)
+- `backend/03-deployment.yaml`: image → Docker Hub repo/tag จริง (bump อัตโนมัติจาก CI)
+- `mcp-server/00-deployment.yaml`: image tag ต้องตรงกับ `backend/03-deployment.yaml` เสมอ (bump คู่กัน เพราะ build มาจาก Dockerfile เดียวกัน)
+- `chatbot-service/02-deployment.yaml`: image → Docker Hub repo/tag จริง (bump อัตโนมัติจาก CI ของ repo `lims-chatbot-service`)
+- Secret ทั้งหมด (`thanes-lims-secrets`, `lims-chatbot-service-secrets`) ไม่ hand-manage แล้ว —
+  มาจาก OCI Vault ผ่าน External Secrets Operator ดู `backend/SECRETS-OCI-VAULT.md`
+  สำหรับ setup ครั้งแรก และต้องเพิ่ม vault key ใหม่ `thanes-lims-mcp-service-api-key`
+  ก่อน apply `backend/06-external-secret.yaml`/`chatbot-service/01-external-secret.yaml`
 
 ## Verify
 
@@ -104,6 +135,8 @@ kubectl get gateway,httproute -A
 kubectl get certificate -A
 curl https://lims.siamatic.work/
 curl https://lims.siamatic.work/api/v1/health
+curl https://lims.siamatic.work/ai/chat -X POST -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <access token>" -d '{"question": "..."}'
 curl https://argocd.siamatic.work/
 ```
 

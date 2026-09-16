@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: lims-mcp-server
+  namespace: thanes-lims
+spec:
+  type: ClusterIP
+  selector:
+    app: lims-mcp-server
+  ports:
+    - name: mcp
+      port: 8090
+      targetPort: mcp
+# Deliberately no HTTPRoute/Gateway attachment for this Service anywhere in
+# this repo - the MCP server is internal-only (see
+# docs/adr/0013-mcp-server-transport.md in the backend repo). Reachable
+# in-cluster at lims-mcp-server.thanes-lims.svc.cluster.local:8090 - that's
+# the value chatbot-service's MCP_SERVER_URL should point at (see
+# ../chatbot-service/00-configmap.yaml).
