@@ -5,6 +5,22 @@ metadata:
   namespace: thanes-lims
 spec:
   type: ClusterIP
+  # MCP Streamable HTTP is a stateful, per-session protocol: the `initialize`
+  # handshake creates a session on whichever replica handles it, and every
+  # follow-up request (tools/list, tools/call) for that session must land on
+  # the SAME replica - the Go SDK's session store is in-memory, per-process,
+  # not shared across replicas. Plain ClusterIP round-robins per request, so
+  # with 2+ replicas a client's initialize and its next call can hit
+  # different pods, and the second one 404s with "session not found". This
+  # was hit in production (2026-09-16, Phase 5.2 verification) before this
+  # field was added. ClientIP affinity pins one calling pod (chatbot-service)
+  # to one mcp-server replica for the affinity window, which is enough since
+  # McpClientService opens+uses+closes one session per call from a stable
+  # source IP (its own pod IP) - see lims-chatbot-service's mcp-client.service.ts.
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
   selector:
     app: lims-mcp-server
   ports:
