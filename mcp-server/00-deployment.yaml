@@ -23,19 +23,11 @@ spec:
         - name: mcp-server
           # Same image as thanes-lims-api (../backend/03-deployment.yaml) -
           # cmd/mcp-server is built into the same binary set from the same
-          # Dockerfile/release. Only the entrypoint differs. Bumped
+          # Dockerfile/release (first included in release 0.0.19, backend
+          # commit 7440b41). Only the entrypoint differs. Bumped
           # automatically by the backend repo's release.yml CI job on every
           # semver tag push, same as ../backend/03-deployment.yaml - don't
           # edit the tag by hand, keep both files' tags in sync.
-          #
-          # PLACEHOLDER as of this writing: cmd/mcp-server was only added to
-          # the Dockerfile in backend commit 7440b41, which has not been
-          # released yet - neither 0.0.16 nor any tag up to 0.0.18 contains
-          # the ./mcp-server binary this Deployment's `command` runs. Do not
-          # apply this manifest until a backend release AFTER 7440b41 has
-          # been tagged and pushed (the CI bump above will then set the
-          # right tag automatically) - applying it against an older tag
-          # will CrashLoopBackOff on "exec ./mcp-server: no such file".
           image: docker.io/siamatic/lims-backend:0.0.19
           command: ["./mcp-server"]
           ports:

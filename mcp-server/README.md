@@ -35,14 +35,10 @@ for the application-level design. This folder is Phase 5.1 of
   Dockerfile/release. Bumped automatically by the backend repo's
   `.github/workflows/release.yml` (same job that bumps `../backend/`) - see
   that repo's Dockerfile, which now builds both `./api` and `./mcp-server`
-  into the same image. **Currently a placeholder**
-  (`PLACEHOLDER_NEEDS_RELEASE_AFTER_7440b41`) - the Dockerfile only started
-  building `./mcp-server` in backend commit `7440b41`, and no tag has been
-  cut since. Don't `kubectl apply` this Deployment until a backend release
-  after that commit exists (CI will then set the real tag automatically);
-  applying it against an older/current tag pulls an image with no
-  `./mcp-server` binary at all and the pod CrashLoopBackOffs on
-  `exec ./mcp-server: no such file or directory`.
+  into the same image. Release `0.0.19` (backend commit `7440b41`) was the
+  first to include `./mcp-server` - don't pin this to anything older, the
+  pod will `CrashLoopBackOff` on `exec ./mcp-server: no such file or
+  directory`.
 - No HTTPRoute exists for this Service anywhere in this repo, on purpose -
   it's internal-only (`ClusterIP`, no Gateway attachment). Don't add one.
 - `02-networkpolicy.yaml` only takes effect if the cluster's CNI enforces
