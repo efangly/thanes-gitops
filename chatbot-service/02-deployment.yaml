@@ -24,7 +24,7 @@ spec:
           # Bumped automatically by the lims-chatbot-service repo's own
           # release.yml CI job on every semver tag push (mirrors
           # ../backend/03-deployment.yaml's pattern) - don't edit by hand.
-          image: docker.io/siamatic/lims-chatbot:0.0.1
+          image: docker.io/siamatic/lims-chatbot:0.0.2
           ports:
             - containerPort: 3000
               name: http
