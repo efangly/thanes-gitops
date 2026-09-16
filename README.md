@@ -120,7 +120,7 @@ kubectl apply -f chatbot-service/
 
 - `platform/cluster-issuer.yaml`: `PLACEHOLDER_EMAIL` → อีเมลจริงสำหรับ Let's Encrypt
 - `backend/03-deployment.yaml`: image → Docker Hub repo/tag จริง (bump อัตโนมัติจาก CI)
-- `mcp-server/00-deployment.yaml`: image tag ต้องตรงกับ `backend/03-deployment.yaml` เสมอ (bump คู่กัน เพราะ build มาจาก Dockerfile เดียวกัน)
+- `mcp-server/00-deployment.yaml`: image เป็น **placeholder** อยู่ (`PLACEHOLDER_NEEDS_RELEASE_AFTER_7440b41`) — ต้อง tag+release backend repo อีกครั้ง**หลัง**commit `7440b41` (ที่เพิ่ม `cmd/mcp-server` เข้า Dockerfile) ก่อน ถึงจะมี image ที่มี `./mcp-server` binary จริงให้ใช้ — อย่า apply manifest นี้ก่อนหน้านั้น (จะ CrashLoopBackOff)
 - `chatbot-service/02-deployment.yaml`: image → Docker Hub repo/tag จริง (bump อัตโนมัติจาก CI ของ repo `lims-chatbot-service`)
 - Secret ทั้งหมด (`thanes-lims-secrets`, `lims-chatbot-service-secrets`) ไม่ hand-manage แล้ว —
   มาจาก OCI Vault ผ่าน External Secrets Operator ดู `backend/SECRETS-OCI-VAULT.md`
