@@ -36,7 +36,7 @@ spec:
           # been tagged and pushed (the CI bump above will then set the
           # right tag automatically) - applying it against an older tag
           # will CrashLoopBackOff on "exec ./mcp-server: no such file".
-          image: docker.io/siamatic/lims-backend:PLACEHOLDER_NEEDS_RELEASE_AFTER_7440b41
+          image: docker.io/siamatic/lims-backend:0.0.19
           command: ["./mcp-server"]
           ports:
             - containerPort: 8090
