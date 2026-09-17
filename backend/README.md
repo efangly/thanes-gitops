@@ -28,32 +28,34 @@ Edit these placeholders:
   secrets, IAM policy, ESO install) and `06-external-secret.yaml` for the
   `ClusterSecretStore` / `ExternalSecret` that ArgoCD manages. Keys:
   `DATABASE_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `REDIS_URL`,
-  `ANTHROPIC_API_KEY`, `ORACLE_DSN`, `STORAGE_ACCESS_KEY` /
-  `STORAGE_SECRET_KEY` (OCI IAM Customer Secret Key — was
-  `MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY`), `PARTNER_API_KEY` (SMtrack
-  Partner API gRPC key — see backend
+  `STORAGE_ACCESS_KEY` / `STORAGE_SECRET_KEY` (OCI IAM Customer Secret Key
+  — was `MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY`), `PARTNER_API_KEY`
+  (SMtrack Partner API gRPC key — see backend
   `docs/adr/0012-partner-api-grpc-transport.md`), and
   `MCP_SERVICE_API_KEY` (shared with `../mcp-server/` and
-  `../chatbot-service/` — see those folders' READMEs).
+  `../chatbot-service/` — see those folders' READMEs). `ANTHROPIC_API_KEY`
+  and `ORACLE_DSN` were removed here once the old in-repo chatbot POC was
+  decommissioned (see backend `CONTEXT.md` "AI Chatbot") —
+  `ANTHROPIC_API_KEY` now lives only in `../chatbot-service/`'s own
+  ExternalSecret, and `ORACLE_DSN` isn't needed anywhere anymore (the
+  `thanes-lims-oracle-dsn` Vault secret itself was left alone, just
+  unreferenced — delete it in Vault too if you want to fully retire it).
 - This Secret and ConfigMap are also consumed by `../mcp-server/`'s
   Deployment (`envFrom`, same resource names) — it shares this repo's Go
   `Config` struct (`internal/config/config.go`) and therefore needs every
   var here, not just the MCP-specific ones. Apply/sync this folder's
   `02-configmap.yaml`/`06-external-secret.yaml` before `../mcp-server/`.
-- `01-secret-adb-wallet.yaml` is also a template only (no data). The
-  `adb-wallet` Secret backs the Oracle ADB wallet volume mounted at
-  `/app/wallet` in the API container (used by the chatbot feature).
-  Create it from a **container-ready copy** of the unzipped ADB wallet
-  directory — not your local dev wallet — see that file's header comment
-  for why (`sqlnet.ora`'s `WALLET_LOCATION` must point at `/app/wallet`,
-  not your dev machine's path).
+- The `adb-wallet` Secret/volume (Oracle ADB wallet, used only by the old
+  chatbot POC) has been removed from `03-deployment.yaml` — the container
+  no longer needs cgo/Oracle Instant Client at all (see backend's
+  Dockerfile). If an `adb-wallet` Secret object still exists in the
+  cluster from before, it's now unused and safe to `kubectl delete secret
+  adb-wallet -n thanes-lims` whenever convenient.
 
 ## Apply order
 
 ```sh
 kubectl apply -f 00-namespace.yaml
-# one-time: OCI Vault + IAM + ESO install, then the adb-wallet Secret
-# (see SECRETS-OCI-VAULT.md and 01-secret-adb-wallet.yaml headers), then:
 kubectl apply -f 02-configmap.yaml
 kubectl apply -f 06-external-secret.yaml   # ESO -> Secret/thanes-lims-secrets
 kubectl apply -f 03-deployment.yaml

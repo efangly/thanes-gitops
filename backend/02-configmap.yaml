@@ -42,19 +42,6 @@ data:
   AUTO_REORDER_ENABLED: "true"
   AUTO_REORDER_INTERVAL: "1h"
 
-  # AI chatbot POC (see backend docs/chatbot-poc-plan.md). NL->SQL + narration
-  # run against the Claude API from Go; the generated SQL runs read-only
-  # against a separate Oracle ADB. ORACLE_ENABLED gates the whole feature -
-  # when true the pod still boots if the ADB is unreachable (graceful
-  # degrade, /chat returns 404). TNS_ADMIN points at the adb-wallet Secret
-  # volume mounted at /app/wallet (see 03-deployment.yaml).
-  # Secrets ANTHROPIC_API_KEY and ORACLE_DSN live in the thanes-lims-secrets
-  # Secret, synced from OCI Vault by the External Secrets Operator
-  # (see 06-external-secret.yaml + SECRETS-OCI-VAULT.md).
-  ORACLE_ENABLED: "true"
-  ORACLE_TNS_ADMIN: "/app/wallet"
-  CHATBOT_MODEL: "claude-haiku-4-5-20251001"
-
   # MCP server (cmd/mcp-server, ../mcp-server/ Deployment) - separate process/
   # image entrypoint from the API, exposing read-only LIMS tools over MCP
   # Streamable HTTP for lims-chatbot-service (see backend
