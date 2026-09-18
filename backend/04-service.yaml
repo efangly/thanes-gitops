@@ -11,3 +11,7 @@ spec:
     - name: http
       port: 80
       targetPort: http
+      # Pins the Envoy Gateway upstream protocol explicitly instead of
+      # relying on its default - the backend (fasthttp) only ever speaks
+      # HTTP/1.1, no h2c support exists in this service.
+      appProtocol: kubernetes.io/h1.1
