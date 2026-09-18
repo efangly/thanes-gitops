@@ -1,0 +1,22 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: thanes-lims-api-stream-timeout
+  namespace: thanes-lims
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: thanes-lims-api
+      sectionName: stream
+  timeout:
+    http:
+      # GET /api/v1/partner-devices/stream is a long-lived SSE connection
+      # (see backend ADR-0011 and internal/adapters/http/partnerdevice/handler.go
+      # Stream). Envoy's default per-route request timeout (~15s) would
+      # otherwise kill it before the backend's own 15s heartbeat, or any
+      # real poll-driven event, ever reaches the client. requestTimeout: 0
+      # disables the timeout for this route only; every other /api/v1 route
+      # keeps Envoy's default via the "default" rule in
+      # 05-gateway-httproute.yaml, which this policy does not target.
+      requestTimeout: 0s

@@ -10,7 +10,20 @@ spec:
   hostnames:
     - lims.siamatic.work
   rules:
-    - matches:
+    # Matched before the general /api/v1 prefix rule below (more specific
+    # PathPrefix wins under Gateway API rule-precedence, but naming this
+    # rule also lets BackendTrafficPolicy target it independently via
+    # sectionName - see 07-backend-traffic-policy.yaml).
+    - name: stream
+      matches:
+        - path:
+            type: PathPrefix
+            value: /api/v1/partner-devices/stream
+      backendRefs:
+        - name: thanes-lims-api
+          port: 80
+    - name: default
+      matches:
         - path:
             type: PathPrefix
             value: /api/v1
