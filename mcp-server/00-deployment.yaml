@@ -28,7 +28,7 @@ spec:
           # automatically by the backend repo's release.yml CI job on every
           # semver tag push, same as ../backend/03-deployment.yaml - don't
           # edit the tag by hand, keep both files' tags in sync.
-          image: docker.io/siamatic/lims-backend:0.0.23
+          image: docker.io/siamatic/lims-backend:0.0.24
           command: ["./mcp-server"]
           ports:
             - containerPort: 8090
